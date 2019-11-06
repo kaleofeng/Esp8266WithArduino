@@ -17,8 +17,8 @@ ESP8266WiFiMulti WiFiMulti;
 const char wifiSSID[] = "Neptune";
 const char wifiPassword[] = "1234509876";
 
-const char httpsUrl[] PROGMEM = "https://www.metazion.net/print";
-const char httpsFingerprint[] PROGMEM = "5a fa b7 1d 1f 67 8d 88 df de d6 99 b5 6f b7 16 0a 7c 2c a9";
+const char httpsUrl[] PROGMEM = "https://ifconfig.co/port/8080";
+const char httpsFingerprint[] PROGMEM = "98 55 01 22 54 27 b0 22 7c 7b de 33 2e 9e 04 3a 09 51 b0 24";
 
 String realIp;
 String realPort;
@@ -87,6 +87,7 @@ bool fetchDataLoop() {
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
       String payload = https.getString();
+      Serial.printf("[HTTPS] Rsp payload: %s\n", payload.c_str());
 
       JSONVar jsonObject = JSON.parse(payload.c_str());
       JSONVar keys = jsonObject.keys();
@@ -95,12 +96,12 @@ bool fetchDataLoop() {
         Serial.printf("[HTTPS] Rsp data: %s %s\n", (const char*)keys[i], JSONVar::stringify(value).c_str());
       }
 
-      if (jsonObject.hasOwnProperty("realIp")) {
-        realIp = jsonObject["realIp"];
+      if (jsonObject.hasOwnProperty("ip")) {
+        realIp = jsonObject["ip"];
       }
       
-      if (jsonObject.hasOwnProperty("realPort")) {
-        realPort = jsonObject["realPort"];
+      if (jsonObject.hasOwnProperty("port")) {
+        realPort = (int)jsonObject["port"];
       }
 
       Serial.printf("[HTTPS] Got data: realIp(%s) realPort(%s)\n", realIp.c_str(), realPort.c_str());
