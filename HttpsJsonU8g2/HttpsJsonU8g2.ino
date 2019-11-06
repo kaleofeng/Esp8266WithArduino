@@ -32,7 +32,7 @@ const char httpsFingerprint[] PROGMEM = "5a fa b7 1d 1f 67 8d 88 df de d6 99 b5 
 String realIp;
 String realPort;
 
-U8G2_SSD1306_128X64_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 0, /* data=*/ 2, /* cs=*/ 5, /* dc=*/ 4, /* reset=*/ 16);
+U8G2_SSD1306_128X64_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 5, /* data=*/ 4, /* cs=*/ 15, /* dc=*/ 12, /* reset=*/ 13);
 
 void setup() {
   Serial.begin(115200);
