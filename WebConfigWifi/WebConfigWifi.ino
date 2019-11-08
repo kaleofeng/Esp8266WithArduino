@@ -24,6 +24,10 @@
 #include <Wire.h>
 #endif
 
+const int STAGE_CONNECTING = 0;
+const int STAGE_CONNECTED = 1;
+const int STAGE_COMMUNICATING = 2;
+
 IPAddress apIP(192, 168, 4, 1);
 IPAddress apNetMask(255, 255, 255, 0);
 const char apSSID[] = "XiHuan";
@@ -34,10 +38,14 @@ ESP8266WebServer server(80);
 char ssid[32] = "";
 char password[32] = "";
 
-boolean connect;
 unsigned int status = WL_IDLE_STATUS;
+boolean connect = false;
+IPAddress localIP;
+int stage = 0;
+const unsigned long stageDuration = 3000; // ms
+unsigned long stageTime = 0; // ms
 
-const unsigned long reconnectInterval = 60000; // ms
+const unsigned long reconnectInterval = 10000; // ms
 unsigned long lastReconnectTime = 0; // ms
 
 const unsigned long logicInterval = 10000; // ms
@@ -101,6 +109,9 @@ bool wifiLoop() {
   
   if (connect) {
     connect = false;
+    localIP = IPAddress();
+    stage = 0;
+    stageTime = 0;
     lastReconnectTime = millis();
     
     WiFi.disconnect();
@@ -117,6 +128,10 @@ bool wifiLoop() {
   if (status != s) {
     Serial.printf("[WIFI] Status changed from %d to %d\n", status, s);
     status = s;
+
+    if (WL_CONNECTED == status) {
+      localIP = WiFi.localIP();
+    }
   }
 }
 
@@ -149,5 +164,28 @@ bool renderLoop(unsigned long now) {
   if (now >= (lastRenderTime + renderInterval)) {
     lastRenderTime = now;
     u8g2DrawLoop();
+  }
+}
+
+bool checkStageCanIn(int stage) {
+  switch (stage) {
+    case STAGE_CONNECTED:
+      return WL_CONNECTED == status;
+    default:
+      return true;
+  }
+}
+
+void checkAndSwitchStage() {
+  if (stageTime == 0) {
+    stageTime = millis();
+  }
+  
+  if (millis() >= stageTime + stageDuration) {
+    const int newStage = stage + 1;
+    if (checkStageCanIn(newStage)) {
+      stage = newStage;
+      stageTime = 0;
+    }
   }
 }

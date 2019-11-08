@@ -25,11 +25,22 @@ void u8gDrawSomething() {
   if (!hasSSID) {
     u8gDrawConfigWifi();
   }
-  else if (status != WL_CONNECTED) {
-    u8gDrawConnectWifi();
-  }
   else {
-    u8gDrawRealData();
+    switch (stage) {
+    case STAGE_CONNECTING: 
+      u8gDrawConnectingWifi();
+      checkAndSwitchStage();
+      break;
+    case STAGE_CONNECTED:
+      u8gDrawConnectedWifi();
+      checkAndSwitchStage();
+      break;
+    case STAGE_COMMUNICATING:
+      u8gDrawRealData();
+      break;
+    default:
+      break;
+    }
   }
 }
 
@@ -43,7 +54,7 @@ void u8gDrawConfigWifi() {
   u8g2.drawStr(48, 40, apIP.toString().c_str());
 }
 
-void u8gDrawConnectWifi() {
+void u8gDrawConnectingWifi() {
   u8g2.drawStr(0, 0, "Connecting to Wifi");
   u8g2.drawStr(0, 20, "SSID:");
   u8g2.drawStr(48, 20, ssid);
@@ -51,6 +62,16 @@ void u8gDrawConnectWifi() {
   u8g2.drawStr(48, 30, password);
   u8g2.drawStr(0, 40, "Status:");
   u8g2.drawStr(48, 40, String(status).c_str());
+}
+
+void u8gDrawConnectedWifi() {
+  u8g2.drawStr(0, 0, "Connected to Wifi");
+  u8g2.drawStr(0, 20, "SSID:");
+  u8g2.drawStr(36, 20, ssid);
+  u8g2.drawStr(0, 30, "PWD:");
+  u8g2.drawStr(36, 30, password);
+  u8g2.drawStr(0, 40, "IP:");
+  u8g2.drawStr(36, 40, localIP.toString().c_str());
 }
 
 void u8gDrawRealData() {
