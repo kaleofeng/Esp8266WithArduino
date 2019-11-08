@@ -1,7 +1,7 @@
 /**
-   BasicHTTPSClient.ino
+  HttpsJsonU8g2.ino
 
-    Created on: 20.08.2018
+  Created on: 07.11.2019
 
 */
 
