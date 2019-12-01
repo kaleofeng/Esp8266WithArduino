@@ -14,7 +14,6 @@
 #include <EEPROM.h>
 #include <WiFiClient.h>
 #include <WiFiClientSecureBearSSL.h>
-#include <Ticker.h>
 
 const int STAGE_CONNECTING = 0;
 const int STAGE_CONNECTED = 1;
@@ -53,6 +52,7 @@ String realIp;
 String realPort;
 
 void setup() {
+  pinMode(BUILTIN_LED, OUTPUT); // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
   //Serial.setDebugOutput(true);
 
@@ -183,6 +183,6 @@ bool checkStageCanIn(int stage) {
   }
 }
 
-bool isConnected() {
+bool isNetworkConnected() {
   return WL_CONNECTED == status;
 }

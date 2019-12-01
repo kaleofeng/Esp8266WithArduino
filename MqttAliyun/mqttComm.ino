@@ -13,15 +13,15 @@ iotx_sign_mqtt_t sign_mqtt;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
-Ticker mqttChecker;
 
 void mqttCommSetup() {
   mqttCommGenerateCredentials();
   mqttClient.setServer(sign_mqtt.hostname, sign_mqtt.port);
-  mqttChecker.attach(5, mqttCommCheckConnection);
+  mqttClient.setCallback(mqttCallback);      
 }
 
-void mqttCommLoop() {  
+void mqttCommLoop() {
+  mqttCommCheckConnection();
   mqttClient.loop();
 }
 
@@ -37,8 +37,26 @@ void mqttCommGenerateCredentials() {
     sign_mqtt.hostname, sign_mqtt.port, sign_mqtt.clientid, sign_mqtt.username, sign_mqtt.password);
 }
 
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  Serial.printf("Message arrived topic(%s)]\n", topic);
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  // Switch on the LED if an 1 was received as first character
+  if ((char)payload[0] == '1') {
+    // Turn the LED on (Note that LOW is the voltage level
+    // but actually the LED is on; this is because
+    // it is active low on the ESP-01)
+    digitalWrite(BUILTIN_LED, LOW);
+  } else {
+    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+  }
+}
+
 void mqttCommCheckConnection() {
-  if (isConnected() && !mqttClient.connected()) {
+  if (isNetworkConnected() && !mqttClient.connected()) {
     mqttCommReconnectServer();
   }
 }
@@ -49,6 +67,7 @@ void mqttCommReconnectServer() {
     
   if (mqttClient.connect(sign_mqtt.clientid, sign_mqtt.username, sign_mqtt.password)) {   
     Serial.printf("[MQTT] connect success\n");
+    mqttClient.subscribe("/a1ePUXC9DUp/Esp8266/user/get");
     return;
   }
 
